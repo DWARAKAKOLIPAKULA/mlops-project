@@ -2,6 +2,10 @@ from fastapi import FastAPI
 import joblib
 import numpy as np
 from pydantic import BaseModel
+import logging
+from src.predict import make_prediction
+
+logging.basicConfig(level=logging.INFO)
 # Initialize app
 app = FastAPI()
 
@@ -25,6 +29,9 @@ def home():
 
 @app.post("/predict")
 def predict(data: StudentInput):
+
+    logging.info(f"Received input: {data}")
+    logging.info(F"Prediction: {prediction}")
     
     input_data = [
         data.sem_present_count,
@@ -38,6 +45,6 @@ def predict(data: StudentInput):
         data.semester_evaluation_internal_mark
     ]
 
-    prediction = model.predict([input_data])
+    prediction = make_prediction(input_data)
 
     return {"prediction": prediction.tolist()}
