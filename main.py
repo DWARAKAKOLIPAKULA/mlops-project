@@ -48,3 +48,5 @@ def predict(data: StudentInput):
     prediction = make_prediction(input_data)
 
     return {"prediction": prediction.tolist()}
+
+print("CI/CD test")
