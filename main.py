@@ -1,16 +1,26 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 import joblib
 import numpy as np
 from pydantic import BaseModel
 import logging
 from src.predict import make_prediction
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
 
 logging.basicConfig(level=logging.INFO)
 # Initialize app
 app = FastAPI()
 
-# Load model
-model = joblib.load("models/model.pkl")
+def verify_api_key(x_api_key: str = Header(...)):
+    api_key = os.getenv("API_KEY")
+
+    if not api_key:
+        raise HTTPException(status_code=500, detail="API key not configured")
+
+    if x_api_key != api_key:
+        raise HTTPException(status_code=403, detail="Unauthorized")
 
 class StudentInput(BaseModel):
     sem_present_count: int
@@ -28,11 +38,10 @@ def home():
     return {"message": "ML Model API is running 🚀"}
 
 @app.post("/predict")
-def predict(data: StudentInput):
-
-    logging.info(f"Received input: {data}")
-    logging.info(F"Prediction: {prediction}")
+def predict(data: StudentInput, x_api_key: str = Header(...)):
     
+    verify_api_key(x_api_key)
+
     input_data = [
         data.sem_present_count,
         data.sem_absent_count,
